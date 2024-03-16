@@ -3,7 +3,6 @@ import React from 'react';
 
 const Calendar: React.FC = () => {
   //const navigate = useNavigate();
-  //hola buenas
   return (
     <div>
       <h1>Calendario</h1>
