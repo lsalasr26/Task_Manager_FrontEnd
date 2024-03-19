@@ -1,3 +1,7 @@
+body{
+  background-color: #333; /* Fondo gris oscuro */
+    color: #fff; /* Color del texto */
+}
 .App {
   text-align: center;
 }
