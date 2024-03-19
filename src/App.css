@@ -1,4 +1,4 @@
-/* .App {
+.App {
   text-align: center;
 }
 
@@ -47,11 +47,11 @@
 }
 
 
-@media (max-width: 768px) {
+ @media (max-width: 768px) {
   .login-form-container {
     max-width: 75%;
   }
-} */
+}
 
 
 

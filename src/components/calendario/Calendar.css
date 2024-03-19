@@ -20,16 +20,18 @@
     border-radius: 50px;
   }
   
-  body {
+  .bodyCalendar {
     position: relative;
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding-top: 30px;
     padding-bottom: 30px;
     background-color: #e2e1dc;
   }
-  .container {
+
+  .containerCalendar {
     position: relative;
     width: 1200px;
     min-height: 850px;
