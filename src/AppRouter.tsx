@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
-import Calendar from './components/Calendar';
+import Calendar from './components/calendario/Calendar';  
 import RegisterPage from './components/RegisterPage';
 
 const AppRouter: React.FC = () => (
