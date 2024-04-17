@@ -20,8 +20,8 @@ const Calendar: React.FC = () => {
   };
 
   const generateDaysArray = () => {
-    const totalDays = daysInMonth(currentDate);
-    const startDay = getMonthStartDay(currentDate);
+    // const totalDays = daysInMonth(currentDate);
+    // const startDay = getMonthStartDay(currentDate);
     const daysArray: JSX.Element[] = [];
     const today = new Date().getDate();
 
