@@ -101,7 +101,8 @@ const Calendar: React.FC = () => {
   };
 
   return (
-    <div className="container">
+    <div className='bodyCalendar'>
+    <div className="containerCalendar">
       <div className="left">
         <div className="calendar">
           <div className="month">
@@ -136,6 +137,7 @@ const Calendar: React.FC = () => {
       <button className="add-event">
         <i className="fas fa-plus"></i>
       </button>
+    </div>
     </div>
   );
 }

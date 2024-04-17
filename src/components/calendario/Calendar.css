@@ -19,7 +19,7 @@
     background: var(--primary-clr);
     border-radius: 50px;
   }
-  
+
   .bodyCalendar {
     position: relative;
     min-height: 100vh;
