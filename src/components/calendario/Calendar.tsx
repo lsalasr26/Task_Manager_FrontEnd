@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import './Calendar.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
-interface CalendarProps {
-  
+interface Day {
+  date: Date;
+  isCurrentMonth: boolean;
 }
 
-const Calendar: React.FC<CalendarProps> = (props) => {
+const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
 
@@ -24,34 +25,58 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     const daysArray: JSX.Element[] = [];
     const today = new Date().getDate();
 
-    // Add days from previous month
-    const prevMonthDays = (startDay === 0 ? 6 : startDay - 1);
-    const prevMonthLastDay = daysInMonth(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
-    for (let i = prevMonthLastDay - prevMonthDays + 1; i <= prevMonthLastDay; i++) {
-      daysArray.push(
-        <div key={`prev-${i}`} className="day prev-month">{i}</div>
-      );
-    }
+    const getCalendarDates = (selectedDate: Date): Day[] => {
+      const currentYear = selectedDate.getFullYear();
+      const currentMonth = selectedDate.getMonth();
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+      const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+  
+      const daysInMonth: Day[] = [];
+      const daysInPrevMonth: Day[] = [];
+      const daysInNextMonth: Day[] = [];
+  
+      //Completa los dias del mes anterior
+      const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+      const prevMonthStartDay = firstDayOfMonth.getDay();
+      for (let i = prevMonthStartDay - 1; i >= 0; i--) {
+          const prevDate = new Date(currentYear, currentMonth - 1, prevMonthLastDay - i);
+          daysInPrevMonth.push({ date: prevDate, isCurrentMonth: false });
+      }
+  
+      //Completa los dias del mes actual
+      for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+          const currentDate = new Date(currentYear, currentMonth, i);
+          daysInMonth.push({ date: currentDate, isCurrentMonth: true });
+      }
+  
+      //Completa los dias del proximo mes
+      const nextMonthDaysCount = 6 * 7 - (daysInPrevMonth.length + daysInMonth.length);
+      for (let i = 1; i <= nextMonthDaysCount; i++) {
+          const nextDate = new Date(currentYear, currentMonth + 1, i);
+          daysInNextMonth.push({ date: nextDate, isCurrentMonth: false });
+      }
+  
+      return [...daysInPrevMonth, ...daysInMonth, ...daysInNextMonth];
+    };
 
-    // Add days from current month
-    for (let i = 1; i <= totalDays; i++) {
-      const isSelected = selectedDate === i;
-      const isToday = currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() && i === today;
+    const calendarDates = getCalendarDates(currentDate);
+
+    //Agrega los dias en la matriz de dias
+    calendarDates.forEach(dayObj => {
+      const day = dayObj.date.getDate();
+      const isSelected = selectedDate === day;
+      const isToday = dayObj.isCurrentMonth && day === today;
       const dayClassName = isSelected ? 'day selected' : isToday ? 'day today' : 'day';
       daysArray.push(
-        <div key={`current-${i}`} className={dayClassName} onClick={() => handleDayClick(i)}>
-          {i}
+        <div
+          key={`${dayObj.date.getFullYear()}-${dayObj.date.getMonth()}-${day}`}
+          className={dayClassName}
+          onClick={() => handleDayClick(day)}
+        >
+          {day}
         </div>
       );
-    }
-
-    // Add days from next month
-    const nextMonthDays = 42 - daysArray.length; // 42 days for 6 rows
-    for (let i = 1; i <= nextMonthDays; i++) {
-      daysArray.push(
-        <div key={`next-${i}`} className="day next-month">{i}</div>
-      );
-    }
+    });
 
     return daysArray;
   };
@@ -76,7 +101,8 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   };
 
   return (
-    <div className="container">
+    <div className='bodyCalendar'>
+    <div className="containerCalendar">
       <div className="left">
         <div className="calendar">
           <div className="month">
@@ -112,7 +138,9 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         <i className="fas fa-plus"></i>
       </button>
     </div>
+    </div>
   );
 }
 
 export default Calendar;
+
