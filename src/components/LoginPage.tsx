@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import logo from './img/pexels-eberhard-grossgasteiger-2310641.jpg'; 
+import logo from './img/pexels-eberhard-grossgasteiger-2310641.jpg';
+
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -30,7 +31,8 @@ const LoginPage: React.FC = () => {
           confirmButtonText: 'Ingresar'
         }).then((result) => {
           if (result.isConfirmed) {
-            navigate('/calendar');
+            
+            navigate(`/perfil`);
           }
         });
       } else {

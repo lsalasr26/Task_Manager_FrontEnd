@@ -4,23 +4,27 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import logo from './img/pexels-eberhard-grossgasteiger-2310641.jpg'; 
 
-const RegisterPage: React.FC = () => {
-  const [name, setName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const encodedEmail = encodeURIComponent(email);
-        const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetUser/${encodedEmail}`);
-        const userData = response.data;
-        setName(userData.name);
-        setLastName(userData.lastName);
-        setEmail(userData.email);
-        setPassword(userData.password);
+
+    
+
+const Perfil: React.FC = () => {
+    
+    const [name, setName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
+  
+    useEffect(() => {
+      async function fetchData() {
+        try {
+          const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetUser/${encodeURIComponent(email)}`);
+          const userData = response.data;
+          setName(userData.name);
+          setLastName(userData.lastName);
+          setEmail(userData.email);
+          setPassword(userData.password);
       } catch (error) {
         console.error(error);
         // Manejar errores de la solicitud
@@ -141,4 +145,4 @@ const RegisterPage: React.FC = () => {
   );
 };
 
-export default RegisterPage;
+export default Perfil;

@@ -4,6 +4,7 @@ import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import Calendar from './components/Calendar';
 import RegisterPage from './components/RegisterPage';
+import Perfil from './components/Perfil';
 
 const AppRouter: React.FC = () => (
   <Router>
@@ -13,6 +14,8 @@ const AppRouter: React.FC = () => (
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/" element={<Dashboard />} />
       <Route path="/calendar" element={<Calendar />} />
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/perfil" element={<Perfil />} />
     </Routes>
   </Router>
 );
