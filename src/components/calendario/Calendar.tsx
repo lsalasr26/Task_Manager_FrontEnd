@@ -11,13 +11,13 @@ const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
 
-  const daysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
+  // const daysInMonth = (date: Date) => {
+  //   return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  // };
 
-  const getMonthStartDay = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
+  // const getMonthStartDay = (date: Date) => {
+  //   return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  // };
 
   const generateDaysArray = () => {
     // const totalDays = daysInMonth(currentDate);
