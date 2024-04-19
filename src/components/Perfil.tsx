@@ -102,12 +102,14 @@ const Perfil: React.FC = () => {
                                             Email
                                         </label>
                                         <input
-                                            type="email"
-                                            className="form-control"
-                                            id="email"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                        />
+                                             type="email"
+                                             className="form-control"
+                                             id="email"
+                                             value={email}
+                                             onChange={(e) => setEmail(e.target.value)}
+                                             readOnly={true}
+                                            />
+
                                     </div>
                                     <div className="mb-3">
                                         <label htmlFor="password" className="form-label">
