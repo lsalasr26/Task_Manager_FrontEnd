@@ -26,8 +26,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     background-color: #e2e1dc;
   }
 
@@ -39,7 +39,7 @@
     padding: 5px;
     color: #fff;
     display: flex;
-  
+    
     border-radius: 10px;
     background-color: #373c4f;
   }
@@ -242,7 +242,7 @@
     border-left: 1px solid var(--primary-clr);
     border-radius: 0;
   }
-  .container .right {
+  .containerCalendar .right {
     position: relative;
     width: 40%;
     min-height: 100%;
@@ -393,8 +393,17 @@
     transform: translateX(-50%);
     transition: max-height 0.5s ease;
   }
-  .add-event-wrapper.active {
-    max-height: 300px;
+  .add-event-wrapper-active {
+    position: absolute;
+    bottom: 100px;
+    left: 50%;
+    width: 90%;
+    max-height: 300px; /* Esto es solo un ejemplo, ajusta según sea necesario */
+    overflow: hidden;
+    border-radius: 5px;
+    background-color: #fff;
+    transform: translateX(-50%);
+    transition: max-height 0.5s ease;
   }
   .add-event-header {
     width: 100%;
