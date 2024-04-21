@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState} from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import logo from './img/pexels-eberhard-grossgasteiger-2310641.jpg'; 
+import logo from './img/pexels-eberhard-grossgasteiger-2310641.jpg';
+
+
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
   const navigate = useNavigate();
   const handleRegisterRedirect = () => {
     navigate('/register'); 
@@ -14,6 +18,7 @@ const LoginPage: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const encodedEmail = encodeURIComponent(email);
+    
     try {
       const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetUser/${encodedEmail}`, {
         auth: {
@@ -30,7 +35,8 @@ const LoginPage: React.FC = () => {
           confirmButtonText: 'Ingresar'
         }).then((result) => {
           if (result.isConfirmed) {
-            navigate('/calendar');
+            localStorage.setItem("email", email);
+            navigate(`/perfil`);
           }
         });
       } else {

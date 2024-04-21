@@ -28,7 +28,7 @@ const RegisterPage: React.FC = () => {
     }
 
     try {
-      const response = await axios.post(`https://task-manager-backend2.azurewebsites.net/api/Users/CreateUser`, {
+      const response = await axios.post(`https://task-manager-backend-serverless.azurewebsites.net/api/CreateUser`, {
         id: email,
         name: name,
         lastName: lastName,
