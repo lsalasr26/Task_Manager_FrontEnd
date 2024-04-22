@@ -398,7 +398,7 @@
     bottom: 100px;
     left: 50%;
     width: 90%;
-    max-height: 300px; /* Esto es solo un ejemplo, ajusta según sea necesario */
+    max-height: 400px; /* Esto es solo un ejemplo, ajusta según sea necesario */
     overflow: hidden;
     border-radius: 5px;
     background-color: #fff;

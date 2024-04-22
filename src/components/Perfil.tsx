@@ -30,7 +30,7 @@ const Perfil: React.FC = () => {
     }, [email]); // Ejecutar el efecto solo cuando cambie el email
 
     const handleLoginRedirect = () => {
-        navigate('/login'); 
+        navigate('/calendar'); 
     };
 
     const handleUpdate = async (e: React.FormEvent) => {

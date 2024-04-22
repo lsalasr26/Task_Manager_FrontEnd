@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './Calendar.css';
 import '@fortawesome/fontawesome-free/css/all.css';
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 interface Day {
   date: Date;
@@ -11,13 +15,115 @@ const Calendar: React.FC = () => {
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [eventInput, setEventInput] = useState('');
   const [events, setEvents] = useState<{ date: Date; event: string }[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
   const [isTodayActive, setIsTodayActive] = useState(false);
   const [inputDate, setInputDate] = useState('');
   const [isAddEventActive, setIsAddEventActive] = useState(false);
   const hasEvents = events.length > 0;
+
+  const [user, setUser] = useState<any>(null);
+  const [name, setName] = useState('');
+  const [lastname, setLastName] = useState('');
+
+  
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [dueDate, setDueDate] = useState<Date>(new Date());
+  const [status, setStatus] = useState('');
+  const [priority, setPriority] = useState('');
+
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetUser/${localStorage.getItem('email')}`);
+        const userData = response.data;
+        setUser(response.data);
+        setName(userData.name);
+        setLastName(userData.lastname)
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const generateRandomId = () => {
+    return Math.random().toString(36).substr(2, 9);
+  }
+
+
+  const handleCreateTask = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!title || !description || !dueDate || !status || !priority) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Completa todos los campos',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+
+    try {
+      const userId = user.id;
+      const id = generateRandomId();
+      const taskId = generateRandomId();
+
+      const formattedDueDate = dueDate.toISOString();
+
+      const response = await axios.post(`https://task-manager-backend-serverless.azurewebsites.net/api/CreateTask`, {
+        id: id,
+        taskId: taskId,
+        userId: userId,
+        title: title,
+        description: description,
+        dueDate: formattedDueDate,
+        status: status,
+        priority: priority
+      });
+      // Verifica si la respuesta está definida antes de intentar acceder a su propiedad data
+      if (response && response.data) {
+        console.log(response.data);
+        // Verifica la respuesta para mostrar el mensaje adecuado
+        if (
+          response.data.title === title ||
+          response.data.description ||
+          response.data.dueDate === dueDate ||
+          response.data.status === status ||
+          response.data.priority === priority
+        ) {
+          Swal.fire({
+            title: 'Tarea Registrada',
+            text: response.data.message,
+            icon: 'success',
+            confirmButtonText: 'OK'
+          })
+        } else {
+          Swal.fire({
+            title: 'Error',
+            text: response.data.error,
+            icon: 'error',
+            confirmButtonText: 'Intentalo de nuevo'
+          });
+        }
+      } else {
+        // Manejar la situación en la que no se recibe ninguna respuesta
+        console.error('No se recibió ninguna respuesta del servidor');
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Ocurrió un error al registrar la tarea',
+        icon: 'error',
+        confirmButtonText: 'Intentar de nuevo'
+      });
+    }
+  };
+
+
 
   const getDayOfWeek = (date: Date) => {
     const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -175,11 +281,6 @@ const Calendar: React.FC = () => {
     setInputDate(event.target.value);
   };
 
-
-  const handleEventInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEventInput(event.target.value);
-  };
-
   const prevMonth = () => {
     setCurrentDate(prevDate => {
       const prevMonthDate = new Date(prevDate.getFullYear(), prevDate.getMonth() - 1);
@@ -201,6 +302,7 @@ const Calendar: React.FC = () => {
   const handleCloseButtonClick = () => {
     setIsAddEventActive(false); // Cierra el formulario de agregar evento
   };
+
 
   return (
     <div className='bodyCalendar'>
@@ -233,30 +335,31 @@ const Calendar: React.FC = () => {
                   value={inputDate}
                   onChange={handleInputChange}
                 />
-                <button className="goto-btn" onClick={handleGotoButtonClick}>Go</button>
+                <button className="goto-btn" onClick={handleGotoButtonClick}>Ir</button>
               </div>
-              <button className="today-btn" onClick={handleTodayClick}>Today</button>
+              <button className="today-btn" onClick={handleTodayClick}>Hoy</button>
             </div>
           </div>
         </div>
         <div className="right">
+          <div className='userName'>
+            <h2>{name} {lastname}</h2>
+          </div>
           <div className='today-date'>
             <div className='event-day'>{getDayOfWeek(currentDate)}</div>
             <div className='event-date'>{getCurrentDate(currentDate)}</div>
           </div>
           <div className={hasEvents ? 'events' : 'events no-event'}>
-            {/* Contenido de los eventos o el mensaje "No Events" */}
             {hasEvents ? (
-              /* Renderizar eventos */
               events.map((event, index) => (
                 <div key={index}>
-                  {/* Renderizar cada evento */}
+
                 </div>
               ))
             ) : (
               /* Mostrar el mensaje "No Events" si no hay eventos */
               <div className="no-event">
-                <h3>No Events</h3>
+                <h3>No Hay Tareas</h3>
               </div>
             )}
           </div>
@@ -265,33 +368,68 @@ const Calendar: React.FC = () => {
               <div className='title'>Agregar Tarea</div>
               <i className='fas fa-times close' onClick={handleCloseButtonClick}></i>
             </div>
-            <div className="add-event-body">
-            <div className="add-event-input">
-              <input type="text" placeholder="Event Name" className="event-name" />
-            </div>
-            <div className="add-event-input">
-              <input
-                type="text"
-                placeholder="Event Time From"
-                className="event-time-from"
-              />
-            </div>
-            <div className="add-event-input">
-              <input
-                type="text"
-                placeholder="Event Time To"
-                className="event-time-to"
-              />
-            </div>
+            <form onSubmit={handleCreateTask}>
+              <div className="add-event-body">
+                <div className="add-event-input">
+                  <input
+                    type='text'
+                    placeholder='Nombre de la tarea'
+                    className='event-name'
+                    id='title'
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    aria-describedby='titleHelp'
+                  />
+                </div>
+                <div className='add-event-input'>
+                  <input
+                    type='text'
+                    placeholder='Descripción'
+                    className='event-name'
+                    id='description'
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    aria-describedby='descriptionHelp'
+                  />
+                </div>
+                <div className='add-event-input'>
+                  <DatePicker
+                    selected={dueDate}
+                    onChange={(date) => setDueDate(date || new Date())}
+                    showTimeInput
+                    dateFormat="yyyy-MM-dd'T'HH:mm:ss"
+                  />
+                </div>
+                <div className='add-event-input'>
+                  <input
+                    type='text'
+                    placeholder='Estado'
+                    className='event-name'
+                    id='status'
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                  />
+                </div>
+                <div className='add-event-input'>
+                  <input
+                    type='text'
+                    placeholder='Prioridad'
+                    className='event-name'
+                    id='priority'
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className='add-event-footer'>
+                <button type="submit" className='add-event-btn'>Agregar</button>
+              </div>
+            </form>
           </div>
-            <div className='add-event-footer'>
-              <button className='add-event-btn'>Add</button>
-            </div>
-          </div>
+          <button className="add-event" onClick={handleAddEventClick}>
+            <i className="fas fa-plus"></i>
+          </button>
         </div>
-        <button className="add-event" onClick={handleAddEventClick}>
-          <i className="fas fa-plus"></i>
-        </button>
       </div>
     </div>
   );
