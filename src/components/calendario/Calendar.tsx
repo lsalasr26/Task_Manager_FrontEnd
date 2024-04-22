@@ -11,11 +11,19 @@ interface Day {
   isCurrentMonth: boolean;
 }
 
+interface Event {
+  title: string;
+  description: string;
+  dueDate: Date;
+  status: string;
+  priority: string;
+}
+
 const Calendar: React.FC = () => {
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [events, setEvents] = useState<{ date: Date; event: string }[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isTodayActive, setIsTodayActive] = useState(false);
   const [inputDate, setInputDate] = useState('');
   const [isAddEventActive, setIsAddEventActive] = useState(false);
@@ -25,7 +33,7 @@ const Calendar: React.FC = () => {
   const [name, setName] = useState('');
   const [lastname, setLastName] = useState('');
 
-  
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState<Date>(new Date());
@@ -122,6 +130,23 @@ const Calendar: React.FC = () => {
       });
     }
   };
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetAllTasksByUserId/${localStorage.getItem('email')}`);
+        if (response && response.data) {
+          setEvents(response.data);
+        } else {
+          console.error('No se recibió ninguna respuesta válida del servidor');
+        }
+      } catch (error) {
+        console.error('Error al obtener los eventos:', error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
 
 
@@ -224,7 +249,7 @@ const Calendar: React.FC = () => {
 
     if (selectedDate && isSameDay(selectedDate, selectedDay)) {
       // Si el día ya estaba seleccionado, lo quitamos
-      setEvents(prevEvents => prevEvents.filter(event => !isSameDay(event.date, selectedDay)));
+      setEvents(prevEvents => prevEvents.filter(event => !isSameDay(event.dueDate, selectedDay)));
       setSelectedDate(null);
     } else {
       // Quitamos la clase 'today' del día actual si está presente
@@ -352,8 +377,18 @@ const Calendar: React.FC = () => {
           <div className={hasEvents ? 'events' : 'events no-event'}>
             {hasEvents ? (
               events.map((event, index) => (
-                <div key={index}>
-
+                <div key={index} className="event">
+                  <div className="title">
+                    <i className="fas fa-circle"></i>
+                    <h3 className='event-title'>{event.title} : {event.description}</h3>
+                  </div>
+                  <div className='event-time'>
+                  <span>Estado: {event.status} - Prioridad: {event.priority}</span>
+                  </div>
+                  <div className='event-time'>
+                  <span>{event.dueDate.toLocaleString()}</span>
+                  </div>
+                  {/* Aquí puedes mostrar otras propiedades del evento según sea necesario */}
                 </div>
               ))
             ) : (

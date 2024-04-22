@@ -398,12 +398,12 @@
     bottom: 100px;
     left: 50%;
     width: 90%;
-    max-height: 400px; /* Esto es solo un ejemplo, ajusta según sea necesario */
+    height: 490px; /* Esto es solo un ejemplo, ajusta según sea necesario */
     overflow: hidden;
     border-radius: 5px;
     background-color: #fff;
     transform: translateX(-50%);
-    transition: max-height 0.5s ease;
+    transition: height 0.5s ease;
   }
   .add-event-header {
     width: 100%;
