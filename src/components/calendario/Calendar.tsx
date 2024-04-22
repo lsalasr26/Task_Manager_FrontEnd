@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Calendar.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import Swal from 'sweetalert2';
@@ -12,6 +13,7 @@ interface Day {
 }
 
 interface Event {
+  taskId: string;
   title: string;
   description: string;
   dueDate: Date;
@@ -28,11 +30,11 @@ const Calendar: React.FC = () => {
   const [inputDate, setInputDate] = useState('');
   const [isAddEventActive, setIsAddEventActive] = useState(false);
   const hasEvents = events.length > 0;
+  const navigate = useNavigate();
 
   const [user, setUser] = useState<any>(null);
   const [name, setName] = useState('');
   const [lastname, setLastName] = useState('');
-
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -40,7 +42,9 @@ const Calendar: React.FC = () => {
   const [status, setStatus] = useState('');
   const [priority, setPriority] = useState('');
 
+  //ENDPOINTS//
 
+  //Endpoint para extrar el id del usuario logueado y poder enviarlo en el POST de creación
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -60,7 +64,7 @@ const Calendar: React.FC = () => {
     return Math.random().toString(36).substr(2, 9);
   }
 
-
+  //Endpoint para creación de tareas
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -91,14 +95,11 @@ const Calendar: React.FC = () => {
         status: status,
         priority: priority
       });
-      // Verifica si la respuesta está definida antes de intentar acceder a su propiedad data
+
       if (response && response.data) {
-        console.log(response.data);
-        // Verifica la respuesta para mostrar el mensaje adecuado
-        if (
-          response.data.title === title ||
-          response.data.description ||
-          response.data.dueDate === dueDate ||
+        if (response.data.title === title ||
+          response.data.description === description ||
+          response.data.dueDate === formattedDueDate ||
           response.data.status === status ||
           response.data.priority === priority
         ) {
@@ -107,6 +108,8 @@ const Calendar: React.FC = () => {
             text: response.data.message,
             icon: 'success',
             confirmButtonText: 'OK'
+          }).then(() => {
+            window.location.reload();
           })
         } else {
           Swal.fire({
@@ -117,7 +120,6 @@ const Calendar: React.FC = () => {
           });
         }
       } else {
-        // Manejar la situación en la que no se recibe ninguna respuesta
         console.error('No se recibió ninguna respuesta del servidor');
       }
     } catch (error) {
@@ -131,6 +133,7 @@ const Calendar: React.FC = () => {
     }
   };
 
+  //Endpoint para listar las tareas del usuario
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -148,15 +151,50 @@ const Calendar: React.FC = () => {
     fetchEvents();
   }, []);
 
+  //Endpoint para eliminar tareas registradas
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      const response = await axios.delete(`https://task-manager-backend-serverless.azurewebsites.net/api/DeleteTask/${taskId}`);
+      if (response && response.data) {
+        // Filtrar las tareas para eliminar la tarea con el taskId especificado
+        const updatedEvents = events.filter(event => event.taskId !== taskId);
+        setEvents(updatedEvents);
+  
+        Swal.fire({
+          title: 'Tarea Eliminada',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          window.location.reload();
+        });
+      }
+    } catch (error) {
+      console.error('Error al eliminar la tarea:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Ocurrió un error al eliminar la tarea',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      }).then(() => {
+        window.location.reload();
+      });
+    }
+  };
 
+  //ENDPOINTS//
 
+  //MANEJO DE EVENTOS Y FUNCIONALIDADES//
+
+  //Opciones de dias de la semana
   const getDayOfWeek = (date: Date) => {
     const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
     return days[date.getDay()];
   };
 
+  // Opciones de formato para mostrar solo día, mes y año
   const getCurrentDate = (date: Date) => {
-    // Opciones de formato para mostrar solo día, mes y año
+    
     const options: Intl.DateTimeFormatOptions = {
       day: 'numeric',
       month: 'short',
@@ -165,11 +203,13 @@ const Calendar: React.FC = () => {
     return date.toLocaleDateString('es-ES', options);
   };
 
+  //Generación del arreglo para los dias del calendario.
   const generateDaysArray = () => {
     const daysArray: JSX.Element[] = [];
     const today = new Date();
     const currentMonth = currentDate.getMonth();
 
+    //Obtiene las fechas para el calendario
     const getCalendarDates = (selectedDate: Date): Day[] => {
       const currentYear = selectedDate.getFullYear();
       const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
@@ -205,7 +245,7 @@ const Calendar: React.FC = () => {
 
     const calendarDates = getCalendarDates(currentDate);
 
-    //Agrega los dias en la matriz de dias
+    //Agrega los dias en la matriz de dias, y actualiza su estado segun la acción.
     calendarDates.forEach(dayObj => {
       const day = dayObj.date.getDate();
       const isSelected = selectedDate ? isSameDay(selectedDate, dayObj.date) : false;
@@ -241,41 +281,38 @@ const Calendar: React.FC = () => {
 
   //Logica manejo de click sobre fechas
   const handleDayClick = (selectedDay: Date) => {
-    // Si el día seleccionado no pertenece al mes actual, redirigir al mes correspondiente
+    // Si el día seleccionado y no pertenece al mes actual, redirige al mes correspondiente.
     if (selectedDay.getMonth() !== currentDate.getMonth()) {
       setCurrentDate(selectedDay);
-      setIsTodayActive(false); // Desactivar el estado del botón TODAY al seleccionar otro día
+      setIsTodayActive(false); // Desactivar el estado del botón TODAY al seleccionar otro día.
     }
-
     if (selectedDate && isSameDay(selectedDate, selectedDay)) {
-      // Si el día ya estaba seleccionado, lo quitamos
+      // Si el día ya estaba seleccionado, se quita.
       setEvents(prevEvents => prevEvents.filter(event => !isSameDay(event.dueDate, selectedDay)));
       setSelectedDate(null);
     } else {
-      // Quitamos la clase 'today' del día actual si está presente
+      // Quita la clase 'today' del día actual si está presente.
       const todayElements = document.querySelectorAll('.today');
       todayElements.forEach(element => {
         element.classList.remove('today');
       });
-
-      // Si el día no estaba seleccionado, lo marcamos
+      // Si el día no estaba seleccionado, se marca.
       setSelectedDate(selectedDay);
-      setIsTodayActive(false); // Desactivar el estado del botón TODAY al seleccionar otro día
-      // Lógica adicional si es necesario
+      setIsTodayActive(false); // Desactiva el estado del botón TODAY al seleccionar otro día.
     }
   };
 
   //Logica boton today
   const handleTodayClick = () => {
     const today = new Date();
-    setCurrentDate(today); // Establecer la fecha actual como la fecha actual
-    setSelectedDate(today); // Establecer la fecha actual como la seleccionada
-    setIsTodayActive(true); // Activar el estado del botón TODAY al hacer clic en él
+    setCurrentDate(today); // Establece la fecha actual como la fecha actual.
+    setSelectedDate(today); // Establece la fecha actual como la seleccionada.
+    setIsTodayActive(true); // Activa el estado del botón TODAY al hacer clic.
   };
 
   //Logica de manejo de clases css
   useEffect(() => {
-    // Cuando el componente se monta o cuando se cambia el estado de isTodayActive, aplicar la clase 'today' al día actual si isTodayActive es verdadero
+    // Cuando el componente se monta o cuando se cambia el estado de isTodayActive, aplica la clase 'today' al día actual si isTodayActive es verdadero.
     if (isTodayActive) {
       const todayElements = document.querySelectorAll('.today');
       todayElements.forEach(element => {
@@ -284,7 +321,7 @@ const Calendar: React.FC = () => {
     }
   }, [isTodayActive]);
 
-  // Función auxiliar para comparar fechas (ignorando la hora)
+  // Función auxiliar para comparar fechas (ignora la hora)
   const isSameDay = (date1: Date, date2: Date) => {
     return (
       date1.getDate() === date2.getDate() &&
@@ -293,9 +330,8 @@ const Calendar: React.FC = () => {
     );
   };
 
-
+  // Lógica para manejar el click en el botón Go.
   const handleGotoButtonClick = () => {
-    // Lógica para manejar el click en el botón "Go"...
     const [day, month, year] = inputDate.split('/');
     const newDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
     setCurrentDate(newDate);
@@ -306,6 +342,7 @@ const Calendar: React.FC = () => {
     setInputDate(event.target.value);
   };
 
+  //Maneja el mes previo al que estamos.
   const prevMonth = () => {
     setCurrentDate(prevDate => {
       const prevMonthDate = new Date(prevDate.getFullYear(), prevDate.getMonth() - 1);
@@ -313,6 +350,7 @@ const Calendar: React.FC = () => {
     });
   };
 
+  //Maneja el mes proximo al que estamos
   const nextMonth = () => {
     setCurrentDate(prevDate => {
       const nextMonthDate = new Date(prevDate.getFullYear(), prevDate.getMonth() + 1);
@@ -320,15 +358,29 @@ const Calendar: React.FC = () => {
     });
   };
 
+  // Cambia el estado del formulario de agregar evento
   const handleAddEventClick = () => {
-    setIsAddEventActive(prevState => !prevState); // Cambia el estado del formulario de agregar evento
+    setIsAddEventActive(prevState => !prevState); 
   };
 
+  // Cierra el formulario de agregar evento
   const handleCloseButtonClick = () => {
-    setIsAddEventActive(false); // Cierra el formulario de agregar evento
+    setIsAddEventActive(false); 
   };
 
+  //Redirecciona el calendario al perfil del usuario.
+  const handlePerfilRedirect = () => {
+    navigate('/perfil');
+  };
 
+  //Hace logout de la app.
+  const handleLoginRedirect = () => {
+    navigate('/login');
+  };
+
+  //MANEJO DE EVENTOS Y FUNCIONALIDADES//
+
+  //Estructura HTML del calendario.
   return (
     <div className='bodyCalendar'>
       <div className="containerCalendar">
@@ -363,6 +415,12 @@ const Calendar: React.FC = () => {
                 <button className="goto-btn" onClick={handleGotoButtonClick}>Ir</button>
               </div>
               <button className="today-btn" onClick={handleTodayClick}>Hoy</button>
+              <button onClick={handlePerfilRedirect}>
+                <i className="fa-solid fa-user"></i>
+              </button>
+              <button onClick={handleLoginRedirect}>
+                <i className="fa-solid fa-right-from-bracket"></i>
+              </button>
             </div>
           </div>
         </div>
@@ -383,16 +441,17 @@ const Calendar: React.FC = () => {
                     <h3 className='event-title'>{event.title} : {event.description}</h3>
                   </div>
                   <div className='event-time'>
-                  <span>Estado: {event.status} - Prioridad: {event.priority}</span>
+                    <span>Estado: {event.status} - Prioridad: {event.priority}</span>
                   </div>
                   <div className='event-time'>
-                  <span>{event.dueDate.toLocaleString()}</span>
+                    <span>{event.dueDate.toLocaleString()}</span>
                   </div>
-                  {/* Aquí puedes mostrar otras propiedades del evento según sea necesario */}
+                  <button className="delete-event" onClick={() => handleDeleteTask(event.taskId)}>
+                    <i className="fa-solid fa-delete-left"></i>
+                  </button>
                 </div>
               ))
             ) : (
-              /* Mostrar el mensaje "No Events" si no hay eventos */
               <div className="no-event">
                 <h3>No Hay Tareas</h3>
               </div>

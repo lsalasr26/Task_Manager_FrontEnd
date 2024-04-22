@@ -26,8 +26,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 1px;
+    padding-bottom: 1px;
     background-color: #e2e1dc;
   }
 
@@ -226,7 +226,7 @@
     border-radius: 5px;
   }
   .calendar .goto-today button {
-    padding: 5px 10px;
+    padding: 10px 20px;
     border: 1px solid var(--primary-clr);
     border-radius: 5px;
     background-color: transparent;
@@ -284,14 +284,15 @@
   }
   .events .event {
     position: relative;
-    width: 95%;
+    width: 100%;
     min-height: 70px;
     display: flex;
     justify-content: center;
     flex-direction: column;
     gap: 5px;
     padding: 0 20px;
-    padding-left: 50px;
+    padding-top: 2px;
+    padding-left: 40px;
     color: #fff;
     background: linear-gradient(90deg, #3f4458, transparent);
     cursor: pointer;
@@ -332,7 +333,7 @@
   }
   /* add tick in event after */
   .events .event::after {
-    content: "✓";
+    content: "";
     position: absolute;
     top: 50%;
     right: 0;
@@ -348,12 +349,30 @@
   .events .event:hover::after {
     display: flex;
   }
+
+  .delete-event{
+    position: absolute;
+    bottom: 30px;
+    right: 5px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: #878895;
+    border: 2px solid #878895;
+    border-radius: 50%;
+    background-color: transparent;
+    cursor: pointer;
+  }
+  
   .add-event {
     position: absolute;
     bottom: 30px;
     right: 30px;
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -546,25 +565,5 @@
     .right .today-date {
       padding: 20px;
     }
-  }
-  
-  .credits {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    text-align: center;
-    padding: 10px;
-    font-size: 12px;
-    color: #fff;
-    background-color: #b38add;
-  }
-  .credits a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  .credits a:hover {
-    text-decoration: underline;
   }
   

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import logo from './img/pexels-eberhard-grossgasteiger-2310641.jpg'; 
+import logo from './img/pexels-eberhard-grossgasteiger-2310641.jpg';
 
 
 const Perfil: React.FC = () => {
@@ -13,7 +13,7 @@ const Perfil: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        
+
         async function fetchData() {
             try {
                 const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetUser/${encodeURIComponent(email)}`);
@@ -30,7 +30,7 @@ const Perfil: React.FC = () => {
     }, [email]); // Ejecutar el efecto solo cuando cambie el email
 
     const handleLoginRedirect = () => {
-        navigate('/calendar'); 
+        navigate('/calendar');
     };
 
     const handleUpdate = async (e: React.FormEvent) => {
@@ -49,7 +49,7 @@ const Perfil: React.FC = () => {
                 icon: 'success',
                 confirmButtonText: 'Ok'
             }).then(() => {
-              window.location.reload();
+                window.location.reload();
             });
         } catch (error) {
             console.error(error);
@@ -63,13 +63,13 @@ const Perfil: React.FC = () => {
     };
 
     return (
-        <body style={{ background :"#333", color:"#fff" }}>
+        <body style={{ background: "#333", color: "#fff" }}>
             <div className="container">
                 <div className="row">
                     <div className="col-md-6" id="ladoIzquierdo">
-                        <div className="card" style={{ width: "28rem",background :"#333", border:"none", color:"#fff" }}>
+                        <div className="card" style={{ width: "28rem", background: "#333", border: "none", color: "#fff" }}>
                             <div className="card-body">
-                                <h5 className="card-title my-5">Actualizar Datos</h5>
+                                <h5 className="card-title my-5">Información Personal</h5>
                                 <form onSubmit={handleUpdate}>
                                     <div className="mb-4 py-2">
                                         <label htmlFor="name" className="form-label">
@@ -102,13 +102,13 @@ const Perfil: React.FC = () => {
                                             Email
                                         </label>
                                         <input
-                                             type="email"
-                                             className="form-control"
-                                             id="email"
-                                             value={email}
-                                             onChange={(e) => setEmail(e.target.value)}
-                                             readOnly={true}
-                                            />
+                                            type="email"
+                                            className="form-control"
+                                            id="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            readOnly={true}
+                                        />
 
                                     </div>
                                     <div className="mb-3">
@@ -123,19 +123,21 @@ const Perfil: React.FC = () => {
                                             onChange={(e) => setPassword(e.target.value)}
                                         />
                                     </div>
-                                    <button type="submit" className="btn btn-primary">
-                                        Actualizar Datos
-                                    </button>
-                                    <button type="button" className="btn btn-secondary" onClick={handleLoginRedirect}>
-                                        Iniciar Sesión
-                                    </button>
+                                    <div className='buttons' style={{padding: "20px"}}>
+                                        <button type="submit" className="btn btn-primary">
+                                            Actualizar Datos
+                                        </button>
+                                        <button type="button" className="btn btn-secondary" onClick={handleLoginRedirect} style={{margin: "0px 30px"}}>
+                                            <i className="fa-solid fa-calendar-days"></i>
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
                     </div>
 
                     <div className="col-md-6" id="imagenIzquierda">
-                        <img src={logo} alt="Descripción de la imagen" className="img-fluid mt-3" />
+                        <img src={logo} alt="Descripción de la imagen" className="img-fluid" />
                     </div>
                 </div>
             </div>

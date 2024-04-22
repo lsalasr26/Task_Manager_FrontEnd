@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import logo from './img/pexels-eberhard-grossgasteiger-2310641.jpg'; 
+import logo from './img/pexels-eberhard-grossgasteiger-2310641.jpg';
 
 const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -12,7 +12,7 @@ const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLoginRedirect = () => {
-    navigate('/login'); 
+    navigate('/login');
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -35,11 +35,11 @@ const RegisterPage: React.FC = () => {
         email: email,
         password: password
       });
-      
+
       console.log(response.data);
-      
-      
-      if (response.data.email===email) {
+
+
+      if (response.data.email === email) {
         Swal.fire({
           title: 'Bienvenido!',
           text: response.data.message,
@@ -70,80 +70,86 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <body style={{ background :"#333", color:"#fff" }}>
+    <body style={{ background: "#333", color: "#fff" }}>
       <div className="container">
-      <div className="row">
-        <div className="col-md-6" id="ladoIzquierdo">
-          <div className="card" style={{ width: "28rem",background :"#333", border:"none", color:"#fff" }}>
-            <div className="card-body">
-              <h5 className="card-title my-5">Registro</h5>
-              <form onSubmit={handleRegister}>
-                <div className="mb-4 py-2">
-                  <label htmlFor="name" className="form-label">
-                    Nombre
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    aria-describedby="nameHelp"
-                  />
-                </div>
-                <div className="mb-4 py-2">
-                  <label htmlFor="lastName" className="form-label">
-                    Apellido
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="lastName"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    aria-describedby="lastNameHelp"
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="email" className="form-label">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">
-                    Contraseña
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <button type="submit" className="btn btn-primary">
-                  Registrarse
-                </button>
-                <button type="button" className="btn btn-secondary" onClick={handleLoginRedirect}>
-                    Iniciar Sesion
-                  </button>
-              </form>
+        <div className="row">
+          <div className="col-md-6" id="ladoIzquierdo">
+            <div className="card" style={{ width: "28rem", background: "#333", border: "none", color: "#fff" }}>
+              <div className="card-body">
+                <h5 className="card-title my-5">Registro</h5>
+                <form onSubmit={handleRegister}>
+                  <div className="mb-4 py-2">
+                    <label htmlFor="name" className="form-label">
+                      Nombre
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      aria-describedby="nameHelp"
+                      placeholder='Ingrese su nombre'
+                    />
+                  </div>
+                  <div className="mb-4 py-2">
+                    <label htmlFor="lastName" className="form-label">
+                      Apellido
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      aria-describedby="lastNameHelp"
+                      placeholder='Ingrese sus apellidos'
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder='Ingrese su correo electrónico'
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="password" className="form-label">
+                      Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder='Ingrese su contraseña'
+                    />
+                  </div>
+                  <div className='buttons' style={{ padding: "20px" }}>
+                    <button type="submit" className="btn btn-primary" style={{margin: "0px 20px"}}>
+                      Registrarse
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={handleLoginRedirect}>
+                      Iniciar Sesion
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="col-md-6" id="imagenIzquierda">
-          <img src={logo} alt="Descripción de la imagen" className="img-fluid mt-3" />
+          <div className="col-md-6" id="imagenIzquierda">
+            <img src={logo} alt="Descripción de la imagen" className="img-fluid" />
+          </div>
         </div>
       </div>
-    </div>
     </body>
   );
 };
