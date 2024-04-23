@@ -36,7 +36,7 @@ const LoginPage: React.FC = () => {
         }).then((result) => {
           if (result.isConfirmed) {
             localStorage.setItem("email", email);
-            navigate(`/perfil`);
+            navigate(`/calendar`);
           }
         });
       } else {
