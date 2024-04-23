@@ -7,6 +7,7 @@ import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+
 interface Day {
   date: Date;
   isCurrentMonth: boolean;
@@ -24,12 +25,18 @@ interface Event {
 const Calendar: React.FC = () => {
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(() => {
+    // Intenta recuperar la fecha almacenada en localStorage
+    const storedDate = localStorage.getItem('selectedDate');
+    // Si existe una fecha almacenada, devuelve la fecha parseada, de lo contrario, devuelve null
+    return storedDate ? new Date(storedDate) : null;
+  });
   const [events, setEvents] = useState<Event[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [isTodayActive, setIsTodayActive] = useState(false);
   const [inputDate, setInputDate] = useState('');
   const [isAddEventActive, setIsAddEventActive] = useState(false);
-  const hasEvents = events.length > 0;
+  const hasEvents = filteredEvents.length > 0;
   const navigate = useNavigate();
 
   const [user, setUser] = useState<any>(null);
@@ -42,10 +49,49 @@ const Calendar: React.FC = () => {
   const [status, setStatus] = useState('');
   const [priority, setPriority] = useState('');
 
+  // Función auxiliar para formatear la fecha para almacenamiento.
+  const formatDateForStorage = (date: Date): string => {
+    return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    };
+
+  // Función auxiliar para leer la fecha del almacenamiento y convertirla en objeto Date.
+  const parseDateFromStorage = (dateString: string): Date => {
+    return new Date(dateString);
+  };
+
+  const [isUpdateEventActive, setIsUpdateEventActive] = useState(false);
+  const [currentTaskId, setCurrentTaskId] = useState('');
+
+  const openUpdateForm = (task: Event) => {
+    if (isUpdateEventActive && currentTaskId === task.taskId) {
+      setIsUpdateEventActive(false);
+      resetFormFields();
+    } else {
+      setTitle(task.title);
+      setDescription(task.description);
+      setDueDate(new Date(task.dueDate));
+      setStatus(task.status);
+      setPriority(task.priority);
+      setCurrentTaskId(task.taskId);
+      setIsUpdateEventActive(true);
+      setIsAddEventActive(false); 
+    }
+  };
+  
+  const resetFormFields = () => {
+    // Establecer estados a valores vacíos o valores por defecto
+    setTitle('');
+    setDescription('');
+    setDueDate(new Date()); // o la fecha que consideres inicial
+    setStatus('');
+    setPriority('');
+    setCurrentTaskId('');
+  };
   //ENDPOINTS//
 
   //Endpoint para extrar el id del usuario logueado y poder enviarlo en el POST de creación
   useEffect(() => {
+    
     const fetchUser = async () => {
       try {
         const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetUser/${localStorage.getItem('email')}`);
@@ -58,7 +104,9 @@ const Calendar: React.FC = () => {
       }
     };
     fetchUser();
+    
   }, []);
+
 
   const generateRandomId = () => {
     return Math.random().toString(36).substr(2, 9);
@@ -83,7 +131,9 @@ const Calendar: React.FC = () => {
       const id = generateRandomId();
       const taskId = generateRandomId();
 
-      const formattedDueDate = dueDate.toISOString();
+      // Formatear la fecha local antes de enviarla al servidor
+      const formattedDueDate = dueDate.toLocaleString('en-US', { timeZone: 'America/Mexico_City' });
+
 
       const response = await axios.post(`https://task-manager-backend-serverless.azurewebsites.net/api/CreateTask`, {
         id: id,
@@ -133,13 +183,66 @@ const Calendar: React.FC = () => {
     }
   };
 
+
+  // Agrega un estado para almacenar el estado de filtrado
+  const [filter, setFilter] = useState('Todas');
+  const [filter_priority, setFilter_priority] = useState('Todas');
+
+
   //Endpoint para listar las tareas del usuario
+
+  useEffect(() => {
+    const fetchAllEvents = async () => {
+      try {
+        const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetAllTasksByUserId/${localStorage.getItem('email')}`);
+        if (response && response.data) {
+          setEvents(response.data); // Actualiza el estado de events con los eventos recuperados
+        } else {
+          console.error('No se recibió ninguna respuesta válida del servidor');
+        }
+      } catch (error) {
+        console.error('Error al obtener todos los eventos:', error);
+      }
+    };
+    fetchAllEvents();
+  }, []);
+  
+
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetAllTasksByUserId/${localStorage.getItem('email')}`);
         if (response && response.data) {
-          setEvents(response.data);
+          let filteredData = response.data;
+          if (filter !== 'Todas') {
+            filteredData = filteredData.filter((event: { status: string; }) => event.status === filter);
+          }
+
+          if (filter_priority !== 'Todas') {
+            filteredData = filteredData.filter((event: { priority: string; }) => event.priority === filter_priority);
+          }
+  
+
+          if (selectedDate) {
+            filteredData = filteredData.filter((event: { dueDate: string | number | Date; }) => {
+              const eventDate = new Date(event.dueDate);
+              return (
+                eventDate.getDate() === selectedDate.getDate() &&
+                eventDate.getMonth() === selectedDate.getMonth() &&
+                eventDate.getFullYear() === selectedDate.getFullYear()
+              );
+            });
+          }
+
+                // Ordenar por hora
+          filteredData.sort((a: { dueDate: string | Date }, b: { dueDate: string | Date }) => {
+          const timeA = new Date(a.dueDate).getTime();
+          const timeB = new Date(b.dueDate).getTime();
+          return timeA - timeB; 
+        });
+
+          setFilteredEvents(filteredData); // Actualiza solo los eventos filtrados
         } else {
           console.error('No se recibió ninguna respuesta válida del servidor');
         }
@@ -147,22 +250,28 @@ const Calendar: React.FC = () => {
         console.error('Error al obtener los eventos:', error);
       }
     };
-
     fetchEvents();
-  }, []);
+  }, [filter, filter_priority, selectedDate]);
+  
+
+// Inicializar selectedDate con la fecha actual al cargar la página por primera vez
+useEffect(() => {
+  const storedDate = localStorage.getItem('selectedDate');
+  setSelectedDate(storedDate ? new Date(storedDate) : new Date());
+}, []);
+
+  
 
   //Endpoint para eliminar tareas registradas
   const handleDeleteTask = async (taskId: string) => {
     try {
       const response = await axios.delete(`https://task-manager-backend-serverless.azurewebsites.net/api/DeleteTask/${taskId}`);
-      if (response && response.data) {
+      if (response) {
         // Filtrar las tareas para eliminar la tarea con el taskId especificado
         const updatedEvents = events.filter(event => event.taskId !== taskId);
         setEvents(updatedEvents);
-  
         Swal.fire({
           title: 'Tarea Eliminada',
-          text: response.data.message,
           icon: 'success',
           confirmButtonText: 'OK'
         }).then(() => {
@@ -181,6 +290,65 @@ const Calendar: React.FC = () => {
       });
     }
   };
+
+  const handleUpdateTask = async (taskId: string) => {
+    if (!title || !description || !dueDate || !status || !priority) {
+      Swal.fire({
+        title: 'Error!',
+        text: 'Completa todos los campos',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+      return;
+    }
+  
+    try {
+      const formattedDueDate = dueDate.toLocaleString('en-US', { timeZone: 'America/Mexico_City' });
+  
+      const response = await axios.put(`https://task-manager-backend-serverless.azurewebsites.net/api/UpdateTask/${taskId}`, {
+        taskId,
+        userId: user.id,
+        title,
+        description,
+        dueDate: formattedDueDate,
+        status,
+        priority
+      });
+  
+      if (response.data) {
+        Swal.fire({
+          title: 'Tarea Actualizada',
+          text: 'La tarea ha sido actualizada con éxito.',
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          window.location.reload(); 
+        });
+      } else {
+        console.error('No se recibió ninguna respuesta del servidor');
+        Swal.fire({
+          title: 'Error',
+          text: 'No se pudo actualizar la tarea',
+          icon: 'error',
+          confirmButtonText: 'Intentar de nuevo'
+        });
+      }
+    } catch (error) {
+      console.error('Error al actualizar la tarea:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Ocurrió un error al actualizar la tarea',
+        icon: 'error',
+        confirmButtonText: 'Intentar de nuevo'
+      });
+    }
+  };
+  
+
+
+
+
+
 
   //ENDPOINTS//
 
@@ -204,7 +372,7 @@ const Calendar: React.FC = () => {
   };
 
   //Generación del arreglo para los dias del calendario.
-  const generateDaysArray = () => {
+  const generateDaysArray = (events: Event[]) => {
     const daysArray: JSX.Element[] = [];
     const today = new Date();
     const currentMonth = currentDate.getMonth();
@@ -265,17 +433,32 @@ const Calendar: React.FC = () => {
         dayClassName += dayObj.date < today ? ' prev-date' : ' next-date';
       }
 
-      daysArray.push(
-        <div
-          key={`${dayObj.date.getFullYear()}-${dayObj.date.getMonth()}-${day}`}
-          className={dayClassName}
-          onClick={() => handleDayClick(dayObj.date)}
-        >
-          {day}
-        </div>
-      );
-    });
-
+      // Comprueba si hay eventos asociados a este día
+    const eventsForDay = events.filter(event => isSameDay(new Date(event.dueDate), dayObj.date));
+        if (eventsForDay.length > 0) {
+          // Si hay eventos
+          daysArray.push(
+            <div
+              key={`${dayObj.date.getFullYear()}-${dayObj.date.getMonth()}-${day}`}
+              className={`day ${dayClassName}`}
+              onClick={() => handleDayClick(dayObj.date)}>
+              <span>{day}&nbsp;</span>
+              <i className="fa-solid fa-list-check"></i>
+            </div>
+          );
+        } else {
+          // Si no hay eventos, solo agrega el día normalmente
+          daysArray.push(
+            <div
+              key={`${dayObj.date.getFullYear()}-${dayObj.date.getMonth()}-${day}`}
+              className={`day ${dayClassName}`}
+              onClick={() => handleDayClick(dayObj.date)}
+            >
+              {day}
+            </div>
+          );
+        }
+      });
     return daysArray;
   };
 
@@ -291,16 +474,14 @@ const Calendar: React.FC = () => {
       setEvents(prevEvents => prevEvents.filter(event => !isSameDay(event.dueDate, selectedDay)));
       setSelectedDate(null);
     } else {
-      // Quita la clase 'today' del día actual si está presente.
-      const todayElements = document.querySelectorAll('.today');
-      todayElements.forEach(element => {
-        element.classList.remove('today');
-      });
       // Si el día no estaba seleccionado, se marca.
       setSelectedDate(selectedDay);
-      setIsTodayActive(false); // Desactiva el estado del botón TODAY al seleccionar otro día.
+      //setSelectedDate(selectedDay);
+      localStorage.setItem('selectedDate', selectedDay.toISOString());
+      //setIsTodayActive(false); // Desactiva el estado del botón TODAY al seleccionar otro día.
     }
   };
+  
 
   //Logica boton today
   const handleTodayClick = () => {
@@ -323,6 +504,9 @@ const Calendar: React.FC = () => {
 
   // Función auxiliar para comparar fechas (ignora la hora)
   const isSameDay = (date1: Date, date2: Date) => {
+    if (!(date1 instanceof Date && date2 instanceof Date)) {
+      return false;
+    }
     return (
       date1.getDate() === date2.getDate() &&
       date1.getMonth() === date2.getMonth() &&
@@ -360,6 +544,8 @@ const Calendar: React.FC = () => {
 
   // Cambia el estado del formulario de agregar evento
   const handleAddEventClick = () => {
+
+    setDueDate(selectedDate || new Date());
     setIsAddEventActive(prevState => !prevState); 
   };
 
@@ -375,9 +561,34 @@ const Calendar: React.FC = () => {
 
   //Hace logout de la app.
   const handleLoginRedirect = () => {
+    localStorage.removeItem('email');
+    localStorage.removeItem('selectedDate');
     navigate('/login');
   };
 
+
+  const formatDate = (date: { toLocaleDateString: (arg0: string, arg1: { year: string; month: string; day: string; }) => any; }) => {
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+  
+  const formatTime = (date: {
+      toLocaleTimeString: (arg0: string, arg1: { 
+        hour: string; minute: string; second: string;
+      }) => any;
+    }) => {
+    return date.toLocaleTimeString('es-ES', { 
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  }
+  
+
+  
   //MANEJO DE EVENTOS Y FUNCIONALIDADES//
 
   //Estructura HTML del calendario.
@@ -401,19 +612,10 @@ const Calendar: React.FC = () => {
               <div>Sab</div>
             </div>
             <div className="days">
-              {generateDaysArray()}
+              {generateDaysArray(events)}
             </div>
             <div className="goto-today">
-              <div className="goto">
-                <input
-                  type="text"
-                  placeholder="dd/mm/yyyy"
-                  className="date-input"
-                  value={inputDate}
-                  onChange={handleInputChange}
-                />
-                <button className="goto-btn" onClick={handleGotoButtonClick}>Ir</button>
-              </div>
+              
               <button className="today-btn" onClick={handleTodayClick}>Hoy</button>
               <button onClick={handlePerfilRedirect}>
                 <i className="fa-solid fa-user"></i>
@@ -426,26 +628,57 @@ const Calendar: React.FC = () => {
         </div>
         <div className="right">
           <div className='userName'>
-            <h2>{name} {lastname}</h2>
+  
+            {/* Lista desplegable para cambiar el estado de filtrado */}
+            <h2 className="filter-dropdown">
+              <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                <option value="Todas">Todas las Tareas</option>
+                <option value="Pendiente">Tareas Pendientes</option>
+                <option value="Terminada">Tares Terminadas</option>
+              </select>
+            </h2>
+
+            {/*<h2>{name} {lastname}</h2>*/}
           </div>
+          <div className='userName'>
+  
+              {/* Lista desplegable para cambiar el estado de filtrado */}
+              <h3 className="filter-dropdown">
+              <select value={filter_priority} onChange={(e) => setFilter_priority(e.target.value)}>
+                <option value="Todas">Todas las Prioridades</option>
+                <option value="Alta">Prioridad Alta</option>
+                <option value="Media">Prioridad Media</option>
+                <option value="Baja">Prioridad Baja</option>
+              </select>
+              </h3>
+              {/*<h2>{name} {lastname}</h2>*/}
+            </div>
           <div className='today-date'>
-            <div className='event-day'>{getDayOfWeek(currentDate)}</div>
-            <div className='event-date'>{getCurrentDate(currentDate)}</div>
+              <div className='event-day'>{selectedDate ? getDayOfWeek(selectedDate) : getDayOfWeek(currentDate)}</div>
+              <div className='event-date'>{selectedDate ? getCurrentDate(selectedDate) : getCurrentDate(currentDate)}</div>
           </div>
           <div className={hasEvents ? 'events' : 'events no-event'}>
             {hasEvents ? (
-              events.map((event, index) => (
+              filteredEvents.map((event, index) => (
                 <div key={index} className="event">
                   <div className="title">
                     <i className="fas fa-circle"></i>
                     <h3 className='event-title'>{event.title} : {event.description}</h3>
                   </div>
                   <div className='event-time'>
-                    <span>Estado: {event.status} - Prioridad: {event.priority}</span>
+                    <span>Estado: {event.status}</span>
                   </div>
                   <div className='event-time'>
-                    <span>{event.dueDate.toLocaleString()}</span>
+                    <span>Prioridad: {event.priority}</span>
                   </div>
+                  <div className='event-time'>
+                    <span>Fecha: {formatDate(new Date(event.dueDate))}</span>
+                    &nbsp;&nbsp;
+                    <span>Hora: {formatTime(new Date(event.dueDate))}</span>
+                  </div>
+                  <button className="update-event" onClick={() => openUpdateForm(event)}>
+                    <i className="fa-solid fa-pen-nib"></i>
+                  </button>
                   <button className="delete-event" onClick={() => handleDeleteTask(event.taskId)}>
                     <i className="fa-solid fa-delete-left"></i>
                   </button>
@@ -457,14 +690,19 @@ const Calendar: React.FC = () => {
               </div>
             )}
           </div>
+
+
           <div className={isAddEventActive ? "add-event-wrapper-active" : "add-event-wrapper"}>
+
             <div className='add-event-header'>
               <div className='title'>Agregar Tarea</div>
               <i className='fas fa-times close' onClick={handleCloseButtonClick}></i>
             </div>
+
             <form onSubmit={handleCreateTask}>
               <div className="add-event-body">
                 <div className="add-event-input">
+                <label>Nombre</label>
                   <input
                     type='text'
                     placeholder='Nombre de la tarea'
@@ -475,7 +713,9 @@ const Calendar: React.FC = () => {
                     aria-describedby='titleHelp'
                   />
                 </div>
+         
                 <div className='add-event-input'>
+                <label>Descripción</label>
                   <input
                     type='text'
                     placeholder='Descripción'
@@ -487,33 +727,51 @@ const Calendar: React.FC = () => {
                   />
                 </div>
                 <div className='add-event-input'>
+                <label>Fecha</label>
                   <DatePicker
                     selected={dueDate}
                     onChange={(date) => setDueDate(date || new Date())}
                     showTimeInput
-                    dateFormat="yyyy-MM-dd'T'HH:mm:ss"
+                    dateFormat="dd-MM-Y"
+                  />
+                  <label>Hora</label>
+                  <DatePicker
+                    selected={dueDate}
+                    onChange={date => setDueDate(date || new Date())}
+                    showTimeSelect
+                    showTimeSelectOnly
+                    timeIntervals={15}  // Intervalos de 15 minutos
+                    timeCaption="Hora"
+                    dateFormat="HH:mm"
                   />
                 </div>
                 <div className='add-event-input'>
-                  <input
-                    type='text'
-                    placeholder='Estado'
-                    className='event-name'
-                    id='status'
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                  />
-                </div>
-                <div className='add-event-input'>
-                  <input
-                    type='text'
-                    placeholder='Prioridad'
-                    className='event-name'
-                    id='priority'
-                    value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
-                  />
-                </div>
+                <label>Estado</label>
+                    <select
+                      className='event-status'
+                      id='status'
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                    >
+                      <option value="">Selecciona un estado</option>
+                      <option value="Pendiente">Pendiente</option>
+                      <option value="Terminada">Terminada</option>
+                    </select>
+                  </div>
+                  <div className='add-event-input'>
+                  <label>Prioridad</label>
+                    <select
+                      className='event-priority'
+                      id='priority'
+                      value={priority}
+                      onChange={(e) => setPriority(e.target.value)}
+                    >
+                      <option value="">Selecciona una prioridad</option>
+                      <option value="Alta">Alta</option>
+                      <option value="Media">Media</option>
+                      <option value="Baja">Baja</option>
+                    </select>
+                  </div>
               </div>
               <div className='add-event-footer'>
                 <button type="submit" className='add-event-btn'>Agregar</button>
@@ -523,6 +781,97 @@ const Calendar: React.FC = () => {
           <button className="add-event" onClick={handleAddEventClick}>
             <i className="fas fa-plus"></i>
           </button>
+
+
+          <div className={isUpdateEventActive ? "update-event-wrapper-active" : "update-event-wrapper"}>
+              <div className='update-event-header'>
+                <div className='title'>Actualizar Tarea</div>
+                <i className='fas fa-times close' onClick={() => {
+                  setIsUpdateEventActive(false);
+                  resetFormFields(); 
+                  }}></i>
+              </div>
+              <form onSubmit={(e) => {
+                    e.preventDefault(); 
+                    handleUpdateTask(currentTaskId);
+                  }}>
+                <div className="update-event-body">
+                <div className="update-event-input">
+                <label>Nombre</label>
+                  <input
+                    type='text'
+                    placeholder='Nombre de la tarea'
+                    className='event-name'
+                    id='title'
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    aria-describedby='titleHelp'
+                  />
+                </div>
+                <div className='update-event-input'>
+                <label>Descripción</label>
+                  <input
+                    type='text'
+                    placeholder='Descripción'
+                    className='event-name'
+                    id='description'
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    aria-describedby='descriptionHelp'
+                  />
+                </div>
+                <div className='update-event-input'>
+                <label>Fecha</label>
+                  <DatePicker
+                    selected={dueDate}
+                    onChange={(date) => setDueDate(date || new Date())}
+                    showTimeInput
+                    dateFormat="dd-MM-Y"
+                  />
+                  <label>Hora</label>
+                  <DatePicker
+                    selected={dueDate}
+                    onChange={date => setDueDate(date || new Date())}
+                    showTimeSelect
+                    showTimeSelectOnly
+                    timeIntervals={15}  // Intervalos de 15 minutos
+                    timeCaption="Hora"
+                    dateFormat="HH:mm"
+                  />
+                </div>
+                <div className='update-event-input'>
+                <label>Estado</label>
+                    <select
+                      className='event-status'
+                      id='status'
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                    >
+                      <option value="">Selecciona un estado</option>
+                      <option value="Pendiente">Pendiente</option>
+                      <option value="Terminada">Terminada</option>
+                    </select>
+                  </div>
+                  <div className='update-event-input'>
+                  <label>Prioridad</label>
+                    <select
+                      className='event-priority'
+                      id='priority'
+                      value={priority}
+                      onChange={(e) => setPriority(e.target.value)}
+                    >
+                      <option value="">Selecciona una prioridad</option>
+                      <option value="Alta">Alta</option>
+                      <option value="Media">Media</option>
+                      <option value="Baja">Baja</option>
+                    </select>
+                  </div>
+              </div>
+                <div className='update-event-footer'>
+                  <button type="submit" className='update-event-btn'>Actualizar</button>
+                </div>
+              </form>
+            </div>
         </div>
       </div>
     </div>
