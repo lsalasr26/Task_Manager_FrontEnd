@@ -10,10 +10,12 @@ const AppRouter: React.FC = () => (
   <Router>
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/calendar" element={<Calendar />} />
-      <Route path="/perfil" element={<Perfil />} />
       <Route path="/" element={<Dashboard />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/calendar" element={<Calendar />} />
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/perfil" element={<Perfil />} />
     </Routes>
   </Router>
 );
