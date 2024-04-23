@@ -40,8 +40,8 @@ const Calendar: React.FC = () => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<any>(null);
-  const [name, setName] = useState('');
-  const [lastname, setLastName] = useState('');
+  //const [name, setName] = useState('');
+  //const [lastname, setLastName] = useState('');
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -50,14 +50,14 @@ const Calendar: React.FC = () => {
   const [priority, setPriority] = useState('');
 
   // Función auxiliar para formatear la fecha para almacenamiento.
-  const formatDateForStorage = (date: Date): string => {
-    return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-    };
+  //const formatDateForStorage = (date: Date): string => {
+  //  return date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+   // };
 
   // Función auxiliar para leer la fecha del almacenamiento y convertirla en objeto Date.
-  const parseDateFromStorage = (dateString: string): Date => {
-    return new Date(dateString);
-  };
+ // const parseDateFromStorage = (dateString: string): Date => {
+  //  return new Date(dateString);
+  //};
 
   const [isUpdateEventActive, setIsUpdateEventActive] = useState(false);
   const [currentTaskId, setCurrentTaskId] = useState('');
@@ -515,16 +515,16 @@ useEffect(() => {
   };
 
   // Lógica para manejar el click en el botón Go.
-  const handleGotoButtonClick = () => {
-    const [day, month, year] = inputDate.split('/');
-    const newDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    setCurrentDate(newDate);
-    setSelectedDate(newDate);
-  };
+ // const handleGotoButtonClick = () => {
+  //  const [day, month, year] = inputDate.split('/');
+  //  const newDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  //  setCurrentDate(newDate);
+  //  setSelectedDate(newDate);
+ // };
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputDate(event.target.value);
-  };
+  //const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //  setInputDate(event.target.value);
+  //};
 
   //Maneja el mes previo al que estamos.
   const prevMonth = () => {
