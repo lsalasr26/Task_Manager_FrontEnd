@@ -29,7 +29,7 @@ const Calendar: React.FC = () => {
     // Intenta recuperar la fecha almacenada en localStorage
     const storedDate = localStorage.getItem('selectedDate');
     // Si existe una fecha almacenada, devuelve la fecha parseada, de lo contrario, devuelve null
-    return storedDate ? new Date(storedDate) : null;
+    return storedDate ? new Date(storedDate) : new Date();
   });
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
@@ -470,7 +470,7 @@ useEffect(() => {
     if (selectedDate && isSameDay(selectedDate, selectedDay)) {
       // Si el día ya estaba seleccionado, se quita.
       setEvents(prevEvents => prevEvents.filter(event => !isSameDay(event.dueDate, selectedDay)));
-      setSelectedDate(null);
+      setSelectedDate(new Date());
     } else {
       // Si el día no estaba seleccionado, se marca.
       setSelectedDate(selectedDay);
