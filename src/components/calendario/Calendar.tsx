@@ -40,8 +40,8 @@ const Calendar: React.FC = () => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<any>(null);
-  const [ setName] = useState('');
-  const [ setLastName] = useState('');
+  //const [name, setName] = useState('');
+  //const [lastname, setLastName] = useState('');
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -97,8 +97,6 @@ const Calendar: React.FC = () => {
         const response = await axios.get(`https://task-manager-backend-serverless.azurewebsites.net/api/GetUser/${localStorage.getItem('email')}`);
         const userData = response.data;
         setUser(response.data);
-        setName(userData.name);
-        setLastName(userData.lastname)
       } catch (error) {
         console.log(error);
       }
