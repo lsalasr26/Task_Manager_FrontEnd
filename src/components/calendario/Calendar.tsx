@@ -159,7 +159,7 @@ const Calendar: React.FC = () => {
             icon: 'success',
             confirmButtonText: 'OK'
           }).then(() => {
-            // window.location.reload();
+            window.location.reload();
           })
         } else {
           Swal.fire({
@@ -275,7 +275,7 @@ useEffect(() => {
           icon: 'success',
           confirmButtonText: 'OK'
         }).then(() => {
-          // window.location.reload();
+          window.location.reload();
         });
       }
     } catch (error) {
@@ -285,9 +285,7 @@ useEffect(() => {
         text: 'Ocurrió un error al eliminar la tarea',
         icon: 'error',
         confirmButtonText: 'OK'
-      }).then(() => {
-        // window.location.reload();
-      });
+      })
     }
   };
 
@@ -322,7 +320,7 @@ useEffect(() => {
           icon: 'success',
           confirmButtonText: 'OK'
         }).then(() => {
-          // window.location.reload(); 
+          window.location.reload(); 
         });
       } else {
         console.error('No se recibió ninguna respuesta del servidor');
