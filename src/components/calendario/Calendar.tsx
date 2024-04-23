@@ -40,8 +40,8 @@ const Calendar: React.FC = () => {
   const navigate = useNavigate();
 
   const [user, setUser] = useState<any>(null);
-  //const [name, setName] = useState('');
-  //const [lastname, setLastName] = useState('');
+  const [ setName] = useState('');
+  const [ setLastName] = useState('');
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
